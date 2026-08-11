@@ -6,14 +6,23 @@
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    // Declared explicitly: TypeScript 6 no longer auto-includes every
-    // node_modules/@types package, so jest globals need naming.
-    "types": ["jest", "node"],
-    // No baseUrl: deprecated in TypeScript 6. Paths resolve relative to this file.
+    "types": [
+      "jest",
+      "node"
+    ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"],
-  "exclude": ["node_modules", "supabase/functions"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "nativewind-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "supabase/functions"
+  ]
 }
