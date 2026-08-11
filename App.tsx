@@ -1,12 +1,17 @@
 import './global.css';
+
 import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RootNavigator } from '@/navigation/RootNavigator';
 
 export default function App() {
   return (
-    <View className="flex-1 items-center justify-center bg-cream">
-      <Text className="text-title2 font-semibold text-ink">Rehearsly</Text>
-      <StatusBar style="dark" />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <RootNavigator />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
