@@ -12,6 +12,14 @@
     "test": "jest",
     "lint": "eslint ."
   },
+  "jest": {
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.expo/",
+      "/supabase/"
+    ]
+  },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.18.16",
@@ -35,8 +43,11 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
     "babel-preset-expo": "~57.0.6",
+    "jest": "^29.7.0",
+    "jest-expo": "^57.0.4",
     "typescript": "~6.0.3"
   }
 }
