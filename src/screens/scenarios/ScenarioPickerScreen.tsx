@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { Button, Card, Screen } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
@@ -24,34 +24,45 @@ const DIFFICULTY_STYLE: Record<Scenario['difficulty'], string> = {
 export function ScenarioPickerScreen() {
   const navigation = useNavigation();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(Boolean(supabase));
+  const [error, setError] = useState<string | null>(
+    supabase ? null : 'Connect Supabase to load the scenario catalogue.',
+  );
+  const [reloadCount, setReloadCount] = useState(0);
 
-  const load = useCallback(async () => {
-    if (!supabase) {
+  useEffect(() => {
+    if (!supabase) return;
+    let cancelled = false;
+
+    void (async () => {
+      const { data, error: queryError } = await supabase
+        .from('scenarios')
+        .select('*')
+        .order('category', { ascending: true });
+
+      if (cancelled) return;
+      if (queryError) {
+        setError(queryError.message);
+      } else {
+        setScenarios(data ?? []);
+      }
       setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadCount]);
+
+  function retry() {
+    if (!supabase) {
       setError('Connect Supabase to load the scenario catalogue.');
       return;
     }
-
     setLoading(true);
     setError(null);
-    const { data, error: queryError } = await supabase
-      .from('scenarios')
-      .select('*')
-      .order('category', { ascending: true });
-
-    if (queryError) {
-      setError(queryError.message);
-    } else {
-      setScenarios(data ?? []);
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+    setReloadCount((count) => count + 1);
+  }
 
   if (loading) {
     return (
@@ -63,7 +74,7 @@ export function ScenarioPickerScreen() {
     );
   }
 
-  // Group by category so the grid reads as the five briefs from CLAUDE.md §4.2.
+  // Group by category so the grid reads as the five preset scenario categories.
   const grouped = scenarios.reduce<Partial<Record<ScenarioCategory, Scenario[]>>>(
     (accumulator, scenario) => {
       const bucket = accumulator[scenario.category] ?? [];
@@ -80,7 +91,7 @@ export function ScenarioPickerScreen() {
         {error ? (
           <Card className="mb-4 border-amber-500 bg-amber-100">
             <Text className="mb-2 text-footnote text-ink">{error}</Text>
-            <Button label="Try again" onPress={() => void load()} variant="secondary" />
+            <Button label="Try again" onPress={retry} variant="secondary" />
           </Card>
         ) : null}
 
