@@ -6,16 +6,25 @@ node_modules/
 # Expo
 .expo/
 dist/
+build/
+out/
 web-build/
 expo-env.d.ts
+
+# Test coverage
+coverage/
 
 # Native
 .kotlin/
 *.orig.*
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
+*.pem
+*.cer
+*.crt
 *.mobileprovision
 
 # Metro
@@ -26,9 +35,12 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
+# OS & IDE
 .DS_Store
-*.pem
+.idea/
+.vscode/
+*.swp
+*.swo
 
 # local env files
 # The Expo default only covers .env*.local, which would let a real .env be
@@ -45,5 +57,7 @@ yarn-error.*
 /ios
 /android
 
-# Claude Code
-.claude/settings.local.json
+# Personal notes & AI agent config
+CLAUDE.md
+*.local.md
+.claude/

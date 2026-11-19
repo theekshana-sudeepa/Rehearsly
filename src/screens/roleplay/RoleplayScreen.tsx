@@ -35,7 +35,7 @@ export function RoleplayScreen() {
           </Text>
         </Card>
 
-        {/* "End & get feedback" is always visible in the real screen (CLAUDE.md §4.3). */}
+        {/* "End & get feedback" is always visible in the real screen. */}
         <Button
           label="End & get feedback"
           onPress={() => navigation.navigate('Feedback', { sessionId: 'placeholder' })}

@@ -1,7 +1,7 @@
 /**
  * Crisis-content safety intercept.
  *
- * A hard rule from day one (CLAUDE.md §2): Rehearsly is a confidence-building
+ * A hard rule from day one: Rehearsly is a confidence-building
  * rehearsal tool, not a therapy app or a crisis service. When a user's scenario
  * description or message indicates crisis-level distress — self-harm, suicidal
  * ideation, or abuse — the app must NOT generate a roleplay. It shows a warm

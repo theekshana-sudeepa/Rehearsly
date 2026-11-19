@@ -13,7 +13,7 @@ order by category;
 \echo ''
 \echo '=== every seeded prompt carries the safety clause and the in-character rule ==='
 -- The crisis sentinel is a hard requirement: a scenario without it could roleplay
--- a crisis (CLAUDE.md §2).
+-- a crisis.
 select
   count(*) as total,
   count(*) filter (where system_prompt like '%__REHEARSLY_CRISIS_STOP__%') as with_sentinel,

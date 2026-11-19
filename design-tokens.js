@@ -11,7 +11,7 @@
  *
  * The palette is deliberately warm and paper-like rather than clinical
  * blue/white — Rehearsly is a confidence-building tool, not a medical
- * product (CLAUDE.md §2).
+ * product.
  */
 
 const colors = {

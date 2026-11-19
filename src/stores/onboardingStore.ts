@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type { OnboardingVariant } from '@/types/database';
 
 /**
- * Onboarding A/B state for the Layers growth experiment (CLAUDE.md §4.6).
+ * Onboarding A/B state for the Layers growth experiment.
  *
  * Hypothesis: users who describe their own situation first (Variant B) complete
  * their first roleplay at a higher rate than users who pick a preset scenario

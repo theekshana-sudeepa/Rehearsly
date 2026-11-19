@@ -1,6 +1,6 @@
 -- Row Level Security.
 --
--- Rule (CLAUDE.md §5): a user may only read/write their own `profiles` and
+-- Rule: a user may only read/write their own `profiles` and
 -- `sessions` rows. `scenarios` is public-read and writable only by the service
 -- role (no policy grants write, so writes require bypassing RLS).
 

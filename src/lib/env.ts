@@ -6,7 +6,7 @@
  * teammate's device. Call `describeMissingConfig()` to report what is unset.
  *
  * OPENAI_API_KEY is intentionally absent here — it is server-side only and
- * lives in Supabase Edge Function secrets (CLAUDE.md §3).
+ * lives in Supabase Edge Function secrets.
  */
 
 function read(name: string): string {

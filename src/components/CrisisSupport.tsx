@@ -9,7 +9,7 @@ interface CrisisSupportProps {
 }
 
 /**
- * Shown in place of a roleplay when the safety intercept fires (CLAUDE.md §2).
+ * Shown in place of a roleplay when the safety intercept fires.
  *
  * Deliberate omissions: no "continue anyway" escape hatch, and no way to reach
  * roleplay from here. The only action returns the user to safety.

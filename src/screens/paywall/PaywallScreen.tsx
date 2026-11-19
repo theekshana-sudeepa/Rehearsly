@@ -11,7 +11,7 @@ const REASON_COPY: Record<RootStackParamList['Paywall']['reason'], string> = {
 
 /**
  * Week 3 replaces this with RevenueCatUI.presentPaywall() — the prebuilt
- * component, not a hand-built screen (CLAUDE.md §4.3). Kept as a route now so
+ * component, not a hand-built screen. Kept as a route now so
  * the gating call sites can already navigate here with a reason.
  */
 export function PaywallScreen() {

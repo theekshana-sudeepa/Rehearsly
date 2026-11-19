@@ -1,9 +1,9 @@
--- Seed the scenario catalogue (CLAUDE.md §4.2).
+-- Seed the scenario catalogue.
 --
 -- Each row's system_prompt is composed of a scenario-specific persona plus a
 -- shared house-rules block. The house rules are declared once here rather than
 -- copy-pasted into every row so the safety clause can never drift between
--- scenarios — that clause is a hard requirement (CLAUDE.md §2).
+-- scenarios — that clause is a hard requirement.
 --
 -- Idempotent: re-running replaces the seeded rows without touching user data.
 
@@ -184,7 +184,7 @@ Soften slightly if the user reassures you the relationship continues while still
 ),
 
 -- ── Career coaching / new-manager conversations ────────────────────────────
--- Maps to the Influencer Award brief (CLAUDE.md §4.2).
+-- Maps to new-manager and career coaching scenarios.
 (
   'career_coaching',
   'Your first time addressing someone''s lateness',

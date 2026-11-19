@@ -14,7 +14,7 @@ const SCORE_LABELS: { key: keyof Pick<SessionFeedback, 'clarity' | 'empathy' | '
 /**
  * Week 3 wires this to real structured feedback from the model. The score row
  * is rendered from the typed SessionFeedback shape now so the contract with the
- * Edge Function is already fixed (CLAUDE.md §4.7).
+ * Edge Function is already fixed.
  */
 export function FeedbackScreen() {
   const navigation = useNavigation();

@@ -25,7 +25,7 @@ export function HomeScreen() {
           </Card>
         ) : null}
 
-        {/* Streak — the retention hook that OneSignal campaigns nudge (CLAUDE.md §4.5) */}
+        {/* Streak — the retention hook that OneSignal campaigns nudge */}
         <Card className="mb-6 flex-row items-center justify-between bg-amber-100 border-amber-500">
           <View>
             <Text className="text-caption font-semibold uppercase tracking-wide text-amber-700">

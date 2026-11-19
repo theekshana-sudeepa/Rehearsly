@@ -30,7 +30,7 @@ export function CustomScenarioScreen() {
       return;
     }
 
-    // Safety gate before anything leaves the device (CLAUDE.md §2).
+    // Safety gate before anything leaves the device.
     const verdict = checkForCrisisContent(trimmed);
     if (verdict.blocked) {
       setCrisis({ visible: true, category: verdict.category });
