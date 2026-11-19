@@ -1,199 +1,285 @@
+<div align="center">
+
 # Rehearsly
 
-**Rehearse the conversation you're dreading — with a partner who pushes back like a real person.**
+**Rehearse the conversation you're dreading — with an AI partner who pushes back like a real person.**
 
-Rehearsly lets you practise hard conversations (giving difficult feedback, setting a boundary,
-saying no, a family talk you keep postponing) against an AI roleplay partner that stays in
-character and resists realistically. When you're done, you get a structured breakdown of how you
-came across — so the real conversation feels familiar instead of frightening.
+A mobile confidence-building platform built with React Native, Expo SDK 57, and Supabase to practise difficult workplace, boundary, and family conversations and receive structured, actionable coaching feedback.
+
+[![React Native](https://img.shields.io/badge/React_Native-0.86-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactnative.dev/)
+[![Expo SDK 57](https://img.shields.io/badge/Expo-SDK_57-000020?style=flat-square&logo=expo&logoColor=white)](https://expo.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![NativeWind](https://img.shields.io/badge/NativeWind-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://www.nativewind.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_RLS-3FCF8E?style=flat-square&logo=supabase&logoColor=black)](https://supabase.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-C2603C?style=flat-square)](LICENSE)
+
+</div>
+
+---
+
+> [!IMPORTANT]
+> Rehearsly is a confidence-building practice tool. It is **not** therapy, counselling, or crisis support, and it does not pretend to be — see [Safety & Crisis Intercept](#safety--crisis-intercept).
 
 Built for the [RevenueCat Shipaton 2026](https://shipaton.revenuecat.com/).
 
-> Rehearsly is a confidence-building practice tool. It is **not** therapy, counselling, or crisis
-> support, and it does not pretend to be — see [Safety](#safety).
-
 ---
 
-## Status
+## Project Status
 
-Week 1 of 7 complete (scaffold). The app is navigable end to end; the roleplay engine, paywall,
-push, and growth experiment land on the schedule in [`CLAUDE.md`](CLAUDE.md) §9.
+Week 1 scaffold complete — the application is navigable end to end with verified database migrations, Row Level Security isolation, typed navigation, and a 46-test client safety layer.
 
 | Area | State |
-|---|---|
-| Expo + TypeScript strict, NativeWind, design system | ✅ Done |
-| Navigation shell, all 10 screens routable | ✅ Done |
-| Supabase auth (sign up / sign in / sign out) | ✅ Done |
-| Postgres schema + RLS + 15 seeded scenarios | ✅ Done, verified against real Postgres |
-| Crisis-safety intercept | ✅ Done, 46 tests |
-| Onboarding A/B assignment | ✅ Assigning and persisted locally |
-| Roleplay chat + OpenAI Edge Function | ⏳ Week 2 |
-| Structured feedback + RevenueCat paywall | ⏳ Week 3 |
-| OneSignal campaigns + store submission | ⏳ Week 4 |
-| Layers experiment live | ⏳ Week 5 |
+| :--- | :--- |
+| Expo SDK 57 + TypeScript strict, NativeWind v4, unified design tokens | ✅ Done |
+| Typed React Navigation shell with all 10 product screens routable | ✅ Done |
+| Supabase email/password auth (sign up / sign in / sign out / delete data) | ✅ Done |
+| PostgreSQL schema + explicit least-privilege RLS + 15 seeded scenarios | ✅ Done (verified against real Postgres) |
+| Defense-in-depth crisis-safety intercept (`src/lib/safety.ts`) | ✅ Done (46 unit tests passing) |
+| Onboarding A/B experiment assignment & persistence | ✅ Done (local seam ready for Layers) |
+| Roleplay chat + OpenAI Supabase Edge Function | ⏳ Planned (Week 2) |
+| Structured coaching feedback + RevenueCat paywall | ⏳ Planned (Week 3) |
+| OneSignal daily reminder & streak-risk campaigns + store release | ⏳ Planned (Week 4) |
+| Layers SDK live onboarding experiment | ⏳ Planned (Week 5) |
 
 ---
 
-## How it works
+## System Architecture
 
+All OpenAI calls route strictly through server-side Supabase Edge Functions so `OPENAI_API_KEY` never enters the mobile client bundle. Client-side crisis screening executes before any network I/O.
+
+```mermaid
+flowchart TD
+    User["Mobile User<br/>iOS and Android Client"] --> App["React Native + Expo SDK 57<br/>TypeScript Strict + NativeWind"]
+
+    subgraph Client["Mobile Application Layer"]
+        App --> Nav["React Navigation<br/>Native Stack + Bottom Tabs"]
+        Nav --> Screens["10 Product Screens<br/>Onboarding, Auth, Roleplay, Feedback"]
+        Screens --> SafetyGate["Crisis Safety Intercept<br/>src/lib/safety.ts"]
+        Screens --> Stores["Zustand State Stores<br/>Auth + Onboarding A/B"]
+        Stores --> SupabaseClient["Supabase JS Client<br/>Null-Safe + AsyncStorage Session"]
+    end
+
+    SafetyGate -->|Crisis Detected| SupportModal["CrisisSupport Surface<br/>Blocks Network and Shows Resources"]
+    SafetyGate -->|Safe Input| SupabaseClient
+
+    subgraph Backend["Supabase Backend Platform"]
+        Auth["Supabase Auth<br/>Email and Password Sessions"]
+        Postgres["PostgreSQL Database<br/>Strict Row Level Security"]
+        EdgeFn["Supabase Edge Functions<br/>Roleplay and Structured Feedback"]
+    end
+
+    SupabaseClient -->|Authenticate User| Auth
+    SupabaseClient -->|Query Scenarios and Sessions| Postgres
+    SupabaseClient -->|Invoke Roleplay Request| EdgeFn
+
+    EdgeFn -->|Server-Side Prompt and Safety Sentinel| OpenAI["OpenAI API<br/>gpt-4o-mini"]
+
+    subgraph Growth["Growth and Monetization SDKs"]
+        RevenueCat["RevenueCat<br/>Subscriptions and Entitlements"]
+        OneSignal["OneSignal<br/>Daily Reminders and Streak Nudges"]
+        Layers["Layers<br/>Onboarding A/B Experiments"]
+    end
+
+    App -.->|Entitlement Gate| RevenueCat
+    App -.->|Push Campaigns| OneSignal
+    Stores -.->|Variant Instrumentation| Layers
 ```
-┌─────────────────────────────────────────────────────────┐
-│  React Native (Expo SDK 57) · TypeScript strict         │
-│                                                         │
-│  Screens ──▶ Zustand stores ──▶ Supabase JS client      │
-│     │                                                   │
-│     └──▶ lib/safety.ts  ◀── runs BEFORE any network I/O │
-└─────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────┐
-│  Supabase                                               │
-│    Auth          email/password, session in AsyncStorage│
-│    Postgres      profiles · scenarios · sessions (RLS)  │
-│    Edge Function roleplay + feedback  ◀── holds the     │
-│                                          OpenAI key     │
-└─────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-                    OpenAI API (gpt-4o-mini)
-```
 
-**The OpenAI key never reaches the client.** All model calls route through a Supabase Edge
-Function, so the key lives in server-side secrets. `.env.example` documents this explicitly —
-`OPENAI_API_KEY` is deliberately *not* prefixed `EXPO_PUBLIC_`, because anything with that prefix
-is inlined into the shipped bundle.
+### Database Schema & Row Level Security
 
-### The core loop
+Managed via reproducible SQL migrations in [`supabase/migrations/`](supabase/migrations/) with explicit `GRANT` statements (`anon` can read the scenario catalogue and nothing else; `authenticated` users can only read and mutate their own `profiles` and `sessions`).
 
-1. **Pick a scenario** — a preset from the catalogue, or describe your own situation in free text.
-2. **Roleplay** — chat with a partner playing the other person, with calibrated emotional
-   resistance: it doesn't fold at your first good point, and it doesn't stonewall forever.
-3. **End any time** — "End & get feedback" is always visible.
-4. **Feedback** — Clarity, Empathy, Assertiveness and Confidence scored 1–5, one thing that
-   worked, and 2–3 specific tips tied to what you actually said.
-5. **Streak** — consecutive practice days build a visible streak.
+```mermaid
+erDiagram
+    AUTH_USERS ||--|| PROFILES : "provisions via trigger"
+    PROFILES ||--o{ SESSIONS : "owns rehearsals"
+    SCENARIOS ||--o{ SESSIONS : "optional preset template"
 
-### Repository layout
+    AUTH_USERS {
+        uuid id PK "Supabase Auth user identifier"
+        text email "Unique login email"
+    }
 
-```
-App.tsx                     Providers: gesture handler, safe area, navigation
-design-tokens.js            Single source of truth for colour + type tokens
-src/
-  components/ui/            Screen, Button, Card, TextField
-  components/CrisisSupport  The surface shown instead of a roleplay
-  lib/safety.ts             Crisis intercept (+ safety.test.ts)
-  lib/supabase.ts           Client; null-safe when unconfigured
-  lib/env.ts                Typed EXPO_PUBLIC_* access
-  navigation/               Typed stack + tabs
-  screens/                  Ten screens per the product spec
-  stores/                   Zustand: auth, onboarding
-  types/database.ts         Mirrors the SQL migrations
-supabase/
-  migrations/               Schema, RLS, seed catalogue
-  tests/run.sh              Verifies migrations on a throwaway cluster
-CLAUDE.md                   The full build brief and constraints
+    PROFILES {
+        uuid id PK, FK "References auth.users id with cascade delete"
+        int streak_count "Consecutive practice days"
+        date last_practice_date "Most recent session date"
+        text onboarding_variant "Experiment arm A or B"
+        timestamptz created_at "Profile creation timestamp"
+    }
+
+    SCENARIOS {
+        uuid id PK "Scenario UUID"
+        text category "Preset scenario category"
+        text title "Display title"
+        text description "Short scenario overview"
+        text difficulty "easy, medium, or hard"
+        text system_prompt "Persona prompt with crisis sentinel"
+        boolean is_premium "Requires premium entitlement"
+    }
+
+    SESSIONS {
+        uuid id PK "Session UUID"
+        uuid user_id FK "References profiles id with cascade delete"
+        uuid scenario_id FK "Nullable reference to scenarios id"
+        text custom_scenario_text "Free-text situation when custom"
+        jsonb transcript "Array of user and partner turns"
+        jsonb feedback "Structured scores and coaching tips"
+        int duration_seconds "Non-negative rehearsal duration"
+        timestamptz created_at "Session creation timestamp"
+    }
 ```
 
 ---
 
-## Safety
+## Core Engineering Highlights
 
-Rehearsly rehearses everyday hard conversations. It must never roleplay a crisis back at someone.
+- **Zero-Crash Unconfigured Boot:** [`src/lib/env.ts`](src/lib/env.ts) and [`src/lib/supabase.ts`](src/lib/supabase.ts) initialize null-safely when environment variables are absent, letting reviewers explore the full UI shell with an explicit configuration banner instead of a crash.
+- **Single-Source Design Tokens:** [`design-tokens.js`](design-tokens.js) feeds both [`tailwind.config.js`](tailwind.config.js) (for NativeWind utilities) and [`src/theme/tokens.ts`](src/theme/tokens.ts) (for React Navigation and native component props) with a warm, non-clinical paper palette.
+- **Strict Database Integrity:** Automated `handle_new_user` trigger eliminates profile race conditions, `sessions_has_a_subject` enforces valid session targets at the SQL constraint level, and cascading foreign keys guarantee zero orphaned rows on account deletion.
+- **Server-Only Secret Isolation:** `.env.example` documents that `OPENAI_API_KEY` is intentionally **not** prefixed with `EXPO_PUBLIC_`, preventing bundler inlining into shipped APK/IPA binaries.
 
-[`src/lib/safety.ts`](src/lib/safety.ts) screens free text for indicators of self-harm, suicidal
-ideation, abuse, or intent to harm others. When it fires, the app shows a warm message pointing to
-real support and **does not** generate a roleplay. Design decisions worth stating:
+### The Core Rehearsal Loop
 
-- **It runs before any network call**, so crisis content is never transmitted to a model provider.
-- **It is tuned to over-trigger.** A false positive costs one redirect to support. A false negative
-  means roleplaying someone's crisis. The test suite pins 14 benign phrasings that must *not*
-  trigger ("kill the project", "this deadline is killing me") to keep that bias honest.
-- **Defence in depth.** Every seeded scenario prompt also instructs the model to emit a sentinel
-  token instead of engaging, and the app replaces any response containing it. A client-side check
-  alone is bypassable, and this rule isn't allowed to be.
-- **No escape hatch.** The support surface has no "continue anyway" button.
+1. **Pick a scenario** — Choose from 15 seeded presets across five categories (Workplace Feedback, Boundaries, Saying No, Difficult Family Talks, Career & New-Manager) or describe a custom situation.
+2. **Roleplay** — Converse with an AI partner calibrated for realistic emotional resistance rather than instant agreement or endless stonewalling.
+3. **End any time** — *"End & get feedback"* remains accessible throughout every rehearsal.
+4. **Structured feedback** — Receive 1–5 scores across **Clarity**, **Empathy**, **Assertiveness**, and **Confidence**, plus one highlight and 2–3 specific, transcript-grounded tips.
+5. **Streak retention** — Consecutive practice days build a visible streak reinforced by user-scheduled reminders.
 
 ---
 
-## Sponsor SDKs — and why each is here
+## Safety & Crisis Intercept
 
-| SDK | What it does in Rehearsly | Why it fits |
-|---|---|---|
-| **RevenueCat** | Subscription paywall. One `premium` entitlement; one offering with weekly and annual packages. Gates custom scenarios and the 4th+ session in a week. | Free tier gives 3 rehearsals/week on base categories — enough to feel the value. The upgrade moment is the person who's actually preparing for something, which is exactly when unlimited practice is worth paying for. Uses RevenueCat's prebuilt paywall rather than a hand-rolled one. |
-| **OneSignal** | Daily practice reminder at a user-chosen time, plus a streak-risk nudge if there's an active streak and no practice by 8pm. Users are tagged with their streak count for segmentation. | Rehearsal only builds confidence if it's repeated. The streak is the product's retention mechanic, so push isn't bolted on — it's what makes the streak mean anything. |
-| **Layers** | Onboarding A/B experiment. Variant A: pick a preset scenario first. Variant B: describe your own situation first. Measures first-roleplay completion rate. | Hypothesis: personal relevance drives follow-through, so users who describe their own situation should complete a first rehearsal more often. Assignment is a single seam (`assignVariant` in `src/stores/onboardingStore.ts`) so switching from local coin-flip to Layers changes one function. |
+Rehearsly rehearses everyday hard conversations and must never roleplay a crisis back at someone. [`src/lib/safety.ts`](src/lib/safety.ts) screens user free text for indicators of self-harm, suicidal ideation, abuse, or intent to harm others:
+
+- **Pre-network execution:** Runs locally before any network I/O so crisis disclosures are never sent to an LLM provider.
+- **Calibrated over-trigger bias:** Word-boundary anchored rules prioritize catching genuine distress while 14 pinned benign-phrasing tests (e.g., *"kill the project"*, *"this deadline is killing me"*) guard against noisy false positives.
+- **Defense in depth:** Every seeded scenario prompt in [`supabase/migrations/20260811000300_seed_scenarios.sql`](supabase/migrations/20260811000300_seed_scenarios.sql) appends a shared house-rules block instructing the model to emit `__REHEARSLY_CRISIS_STOP__` instead of engaging, which the client intercepts via `responseTrippedSafety()`.
+- **No escape hatch:** [`CrisisSupport`](src/components/CrisisSupport.tsx) presents support resources with no *"continue anyway"* bypass.
 
 ---
 
-## Setup
+## Sponsor SDKs — Why Each Is Integrated
 
-**Requirements:** Node 20+, npm, an Expo account for device builds. A local Postgres install is
-optional (only for running the migration tests).
+| SDK | Role in Rehearsly | Architectural Rationale |
+| :--- | :--- | :--- |
+| **RevenueCat** | Subscription paywall with one `premium` entitlement and one offering (weekly & annual packages), gating custom scenarios and 4+ weekly sessions. | Three free rehearsals/week let users experience real value; the upgrade trigger arrives naturally when preparing for an important conversation. Uses RevenueCat's prebuilt paywall UI. |
+| **OneSignal** | Daily practice reminder at a user-chosen time plus an 8pm streak-risk nudge, tagging users with streak count for segmentation. | Rehearsal builds confidence through repetition; push notifications directly reinforce the core streak retention loop. |
+| **Layers** | Onboarding A/B experiment comparing **Variant A** (pick a preset scenario first) vs **Variant B** (describe your own situation first) on first-roleplay completion. | Tests whether immediate personal relevance increases follow-through. Isolated behind a single assignment seam (`assignVariant` in [`src/stores/onboardingStore.ts`](src/stores/onboardingStore.ts)). |
+
+---
+
+## Repository Structure
+
+```text
+Rehearsly/
+├── App.tsx                                       # Root providers: gesture handler, safe area, navigation
+├── app.json                                      # Expo SDK 57 app & plugin manifest
+├── eas.json                                      # EAS Build profiles (development, preview, production)
+├── design-tokens.js                              # Single source of truth for palette, type & spacing
+├── eslint.config.js                              # Expo flat ESLint configuration
+├── tailwind.config.js                            # NativeWind v4 / Tailwind v3 theme bridge
+├── .env.example                                  # Documented public vs server-only env template
+├── src/
+│   ├── components/
+│   │   ├── ui/                                   # Reusable primitives: Screen, Button, Card, TextField
+│   │   └── CrisisSupport.tsx                     # Non-bypassable crisis support modal surface
+│   ├── lib/
+│   │   ├── env.ts                                # Typed EXPO_PUBLIC_* accessor & diagnostics
+│   │   ├── safety.ts                             # Pre-network crisis intercept & sentinel detection
+│   │   ├── safety.test.ts                        # 46 unit tests for safety rules & benign phrases
+│   │   └── supabase.ts                           # Null-safe Supabase JS client with AsyncStorage
+│   ├── navigation/
+│   │   ├── RootNavigator.tsx                     # Onboarding, Auth & main stack routing
+│   │   ├── TabNavigator.tsx                      # Bottom tabs: Practice, Progress, Settings
+│   │   └── types.ts                              # Global React Navigation strict param types
+│   ├── screens/                                  # 10 screens: onboarding, auth, home, scenarios, roleplay, feedback, progress, paywall, settings
+│   ├── stores/                                   # Zustand stores: authStore & persisted onboardingStore
+│   ├── theme/tokens.ts                           # Typed token exports for native props
+│   └── types/database.ts                         # TypeScript mirror of PostgreSQL schema & JSONB contracts
+└── supabase/
+    ├── migrations/
+    │   ├── 20260811000100_init_schema.sql        # Tables, indexes, constraints & signup trigger
+    │   ├── 20260811000200_row_level_security.sql # Explicit grants & per-table RLS policies
+    │   └── 20260811000300_seed_scenarios.sql     # 15 seeded scenarios with shared safety house rules
+    └── tests/
+        ├── run.sh                                # Throwaway Postgres cluster migration & RLS test runner
+        ├── 00_supabase_stubs.sql                 # Auth schema & role stubs for isolated local testing
+        ├── 01_rls_isolation.sql                  # Cross-user isolation & anon least-privilege assertions
+        └── 02_schema_shape.sql                   # Trigger, constraint, cascade & sentinel checks
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js 20+** and **npm**
+- An **Expo** account (for EAS / physical device builds)
+- A **Supabase** project (optional for UI exploration; required for auth and database persistence)
+- Local **PostgreSQL** (`initdb`, `pg_ctl`, `psql`) — optional, only for running `./supabase/tests/run.sh`
+
+### 1. Clone & Configure Environment
 
 ```bash
-git clone https://github.com/<your-username>/rehearsly.git
-cd rehearsly
+git clone https://github.com/theekshana-sudeepa/Rehearsly.git
+cd Rehearsly
 npm install
-cp .env.example .env    # then fill in your keys
-npm start
+cp .env.example .env
 ```
 
-### Supabase
+Fill in `.env` with your project's public keys (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and SDK keys as you enable them). Never put `OPENAI_API_KEY` in an `EXPO_PUBLIC_` variable — configure it strictly as a Supabase Edge Function secret:
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Put the project URL and anon key in `.env`.
-3. Apply the migrations — either paste each file from `supabase/migrations/` into the SQL editor in
-   filename order, or with the CLI:
+```bash
+supabase secrets set OPENAI_API_KEY=sk-...
+```
+
+### 2. Apply Supabase Migrations
+
+Apply the SQL migrations in filename order via the Supabase SQL Editor or the Supabase CLI:
 
 ```bash
 supabase link --project-ref <your-project-ref>
 supabase db push
 ```
 
-Without Supabase keys the app still boots and is navigable; it shows a configuration notice instead
-of crashing.
-
-### Verify the database layer
-
-Runs the migrations against a **throwaway** Postgres cluster and asserts the security model. It
-does not touch your Supabase project or any Postgres server you already run.
+### 3. Run the Application
 
 ```bash
-./supabase/tests/run.sh
+npm start          # Start Expo Metro dev server
+npm run android    # Build & run native Android target
+npm run ios        # Build & run native iOS target
+npm run web        # Launch web preview
 ```
 
-Checks: cross-user select/insert/update/delete are all blocked, `anon` has no privilege on user
-tables, the scenario catalogue is read-only to clients, every seeded prompt carries the crisis
-sentinel, and deleting an auth user leaves no orphaned rows.
-
-### Checks
+### 4. Verify Code Quality & Database Security
 
 ```bash
-npm run typecheck
+npm run lint                # Expo ESLint checks
+npm run typecheck           # TypeScript strict verification
+npm test                    # 46 Jest safety-intercept tests
+./supabase/tests/run.sh     # Throwaway Postgres RLS & schema verification
 ```
 
-```bash
-npm test
-```
+### Pinned Technical Decisions
 
----
-
-## Tech stack
-
-React Native + Expo (SDK 57) · TypeScript strict · React Navigation · Zustand · NativeWind
-(Tailwind) · Supabase (Postgres, Auth, Edge Functions) · OpenAI · RevenueCat · OneSignal · Layers ·
-EAS Build
-
-Distribution targets Google Play and the Samsung Galaxy Store.
-
-**Two pinned decisions worth knowing before you touch dependencies:**
-
-- `tailwindcss` is pinned to **v3**. NativeWind 4 breaks on Tailwind v4.
-- `babel-preset-expo` is a direct devDependency because SDK 57 nests it under `expo/node_modules`,
-  so resolving it by name from `babel.config.js` fails.
+- **`tailwindcss` is pinned to v3 (`^3.4.19`):** NativeWind v4 is incompatible with Tailwind CSS v4.
+- **`babel-preset-expo` is a direct `devDependency`:** Expo SDK 57 nests it under `expo/node_modules`, so direct declaration guarantees reliable Babel resolution.
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for full details.
+
+---
+
+<div align="center">
+
+**Built by [Theekshana Sudeepa](https://github.com/theekshana-sudeepa)**
+
+[LinkedIn](https://www.linkedin.com/in/theekshana-sudeepa/) · [GitHub](https://github.com/theekshana-sudeepa) · [LexoraTech](https://lexoratech.com)
+
+</div>
